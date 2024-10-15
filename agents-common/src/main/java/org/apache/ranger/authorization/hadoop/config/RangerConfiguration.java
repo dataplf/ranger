@@ -53,9 +53,7 @@ public class RangerConfiguration extends Configuration {
 				ret = true;
 			} catch (Exception e) {
 				LOG.error("Unable to load the resource name [" + aResourceName + "]. Ignoring the resource:" + fUrl);
-				if (LOG.isDebugEnabled()) {
-					LOG.debug("Resource loading failed for " + fUrl, e);
-				}
+				LOG.info("Resource loading failed for " + fUrl, e);
 			}
 		} else {
 			LOG.error("addResourceIfReadable(" + aResourceName + "): couldn't find resource file location");
