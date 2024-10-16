@@ -974,7 +974,17 @@ public class MiscUtil {
 			// TODO: Do proper parsing based on Solr response value
 			return new Date(value.toString());
 		} catch (Throwable t) {
-			logger.error("Error converting value to date. Value = " + value, t);
+			logger.info("Error converting value to date, try again with SimpleDateFormat. Value = " + value, t);
+
+			// another try with SimpleDateFormat to parse values like 2023-12-14T09:37:26.195Z
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+
+			try {
+				return sdf.parse(value.toString());
+			}
+			catch (Throwable t2) {
+				logger.error("Error converting value to date. Value = " + value, t2);
+			}
 		}
 		return null;
 	}

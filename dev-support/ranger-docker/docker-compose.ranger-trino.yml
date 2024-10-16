@@ -1,0 +1,33 @@
+version: '3'
+services:
+  trino:
+    build:
+      context: .
+      dockerfile: Dockerfile.ranger-trino
+      args:
+        - RANGER_VERSION=ranger-3.0.0-SNAPSHOT-trino-plugin
+        - TRINO_VERSION=${TRINO_VERSION:-461}
+    image: ranger-trino:${TRINO_VERSION:-461}
+    hostname: ranger-trino
+    container_name: ranger-trino
+    stdin_open: true
+    tty: true
+    ports:
+      - 8080:8080
+    depends_on:
+      ranger:
+        condition: service_started
+    networks:
+      - ranger
+    environment:
+      - RANGER_VERSION=ranger-3.0.0-SNAPSHOT-trino-plugin
+      - RANGER_AUDIT_URL=es01
+      - RANGER_AUDIT_PORT=9200
+      - RANGER_AUDIT_USER=elastic
+      - RANGER_AUDIT_PASSWORD=elasticsearch
+      - RANGER_POLICY_MGR_URL=http://ranger:6080
+      - REPOSITORY_NAME=dev_trino
+
+networks:
+  ranger:
+    name: rangernw

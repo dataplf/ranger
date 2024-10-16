@@ -82,6 +82,11 @@ def populate_global_dict():
 			if 'PASSWORD' in key:
 				value = ''
 			value = value.strip()
+
+			# load environment variables if value start with $ and not start with $PWD
+			if value.startswith("$") and not value.startswith("$PWD"):
+				value = os.getenv(value[1:])
+
 			globalDict[key] = value
 
 def jisql_log(query, db_password):

@@ -180,7 +180,7 @@
       "uiHint": "",
       "label": "Trino Function",
       "description": "Trino Function",
-      "accessTypeRestrictions": ["execute", "grant"]
+      "accessTypeRestrictions": ["execute", "grant", "create", "drop"]
     },
     {
       "itemId": 9,
@@ -202,7 +202,7 @@
       "uiHint": "",
       "label": "Schema Procedure",
       "description": "Schema Procedure",
-      "accessTypeRestrictions": ["execute", "grant"]
+      "accessTypeRestrictions": ["execute", "grant", "create", "drop"]
     }
   ],
   "accessTypes": [
@@ -288,6 +288,7 @@
         "revoke",
         "show",
         "impersonate",
+        "update",
         "execute"
       ]
     },
@@ -296,6 +297,11 @@
       "name": "execute",
       "label": "execute",
       "category": "READ"
+    },
+    {
+      "itemId": 14,
+      "name": "update",
+      "label": "Update"
     }
   ],
   "configs": [

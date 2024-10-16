@@ -97,6 +97,11 @@ def populate_global_dict():
 			if 'PASSWORD' in key:
 				value = ''
 			value = value.strip()
+
+			# load environment variables if value start with $ and not start with $PWD
+			if value.startswith("$") and not value.startswith("$PWD"):
+				value = os.getenv(value[1:])
+
 			globalDict[key] = value
 		if 'ranger_admin_max_heap_size' not in globalDict:
 			globalDict['ranger_admin_max_heap_size']='1g'

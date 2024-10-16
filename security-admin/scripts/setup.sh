@@ -34,6 +34,13 @@ get_prop(){
 	validateProperty=$(sed '/^\#/d' $2 | grep "^$1\s*="  | tail -n 1) # for validation
 	if  test -z "$validateProperty" ; then log "[E] '$1' not found in $2 file while getting....!!"; exit 1; fi
 	value=$(echo $validateProperty | cut -d "=" -f2-)
+
+	if [[ $value == \$* ]] && [[ $value != \$PWD* ]]
+	then
+		value=${value:1}
+		value=${!value}
+	fi
+
 	if [[ $1 == *password* ]]
                 then
                         echo $value

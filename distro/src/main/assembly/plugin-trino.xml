@@ -49,6 +49,7 @@
                     <include>org.slf4j:slf4j-simple:jar:${slf4j.version}</include>
                     <include>javax.annotation:javax.annotation-api:jar:${javax.annotation-api}</include>
                     <include>com.fasterxml.jackson.core:jackson-core:jar:${fasterxml.jackson.version}</include>
+                    <include>org.openjdk.nashorn:nashorn-core:jar:${nashorn.version}</include>
                 </includes>
             </binaries>
         </moduleSet>
@@ -88,6 +89,8 @@
                     <include>org.apache.commons:commons-compress:jar:${commons.compress.version}</include>
                     <include>org.slf4j:jcl-over-slf4j:jar:${slf4j.version}</include>
                     <include>org.slf4j:slf4j-api:jar:${slf4j-api.version}</include>
+                    <include>org.apache.logging.log4j:log4j-api:jar:${log4j2.version}</include>
+                    <include>org.apache.logging.log4j:log4j-to-slf4j:jar:${log4j2.version}</include>
                     <include>ch.qos.logback:logback-classic:jar:${logback.version}</include>
                     <include>ch.qos.logback:logback-core:jar:${logback.version}</include>
                     <include>com.google.guava:guava:jar:${google.guava.version}</include>

@@ -71,4 +71,12 @@
       S3 Plugin RangerRestClient read Timeout in Milli Seconds
     </description>
   </property>
+
+  <property>
+      <name>ranger.plugin.trino.use.rangerGroups</name>
+      <value>true</value>
+      <description>
+          Ranger policies using user-groups from Ranger admin
+      </description>
+  </property>
 </configuration>

@@ -17,7 +17,9 @@
 
 package org.apache.ranger.authorization.trino.authorizer;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import io.trino.spi.QueryId;
 import io.trino.spi.connector.CatalogSchemaName;
 import io.trino.spi.connector.CatalogSchemaRoutineName;
 import io.trino.spi.connector.CatalogSchemaTableName;
@@ -33,6 +35,8 @@ import static org.junit.Assert.*;
 
 import io.trino.spi.security.ViewExpression;
 import io.trino.spi.type.VarcharType;
+import java.time.Instant;
+import java.util.Collection;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -56,14 +60,18 @@ public class RangerSystemAccessControlTest {
   //private static final Identity nonAsciiUser = Identity.ofUser("\u0194\u0194\u0194");
 
   private static final Set<String> allCatalogs = ImmutableSet.of("open-to-all", "all-allowed", "alice-catalog");
-  private static final Set<String> queryOwners = ImmutableSet.of("bob", "alice", "frank");
+  private static final Collection<Identity> queryOwners = ImmutableSet.of(Identity.forUser("bob").build(), Identity.forUser("alice").build(), Identity.forUser("frank").build());
   private static final String aliceCatalog = "alice-catalog";
   private static final CatalogSchemaName aliceSchema = new CatalogSchemaName("alice-catalog", "schema");
   private static final CatalogSchemaTableName aliceTable = new CatalogSchemaTableName("alice-catalog", "schema","table");
+
+  private static final Set<String> aliceColumns = Set.of("alice-col1", "alice-col2");
+  private static final Set<String> aliceDeniedColumns = Set.of("alice-col3", "alice-col4");
   private static final CatalogSchemaTableName aliceView = new CatalogSchemaTableName("alice-catalog", "schema","view");
+  private static final CatalogSchemaTableName aliceMaterializedView = new CatalogSchemaTableName("alice-catalog", "schema","materialized-view");
 
   private static final CatalogSchemaRoutineName aliceProcedure = new CatalogSchemaRoutineName("alice-catalog", "schema", "procedure");
-  private static final String functionName = new String("function");
+  private static final CatalogSchemaRoutineName aliceFunction = new CatalogSchemaRoutineName("alice-catalog", "schema", "function");
 
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
@@ -75,16 +83,16 @@ public class RangerSystemAccessControlTest {
   @SuppressWarnings("PMD")
   public void testCanSetUserOperations() {
     try {
-      accessControlManager.checkCanImpersonateUser(context(alice), bob.getUser());
+      accessControlManager.checkCanImpersonateUser(alice, bob.getUser());
       throw new AssertionError("expected AccessDeniedExeption");
     }
     catch (AccessDeniedException expected) {
     }
 
-    accessControlManager.checkCanImpersonateUser(context(admin), bob.getUser());
+    accessControlManager.checkCanImpersonateUser(admin, bob.getUser());
 
     try {
-      accessControlManager.checkCanImpersonateUser(context(kerberosInvalidAlice), bob.getUser());
+      accessControlManager.checkCanImpersonateUser(kerberosInvalidAlice, bob.getUser());
       throw new AssertionError("expected AccessDeniedExeption");
     }
     catch (AccessDeniedException expected) {
@@ -111,13 +119,13 @@ public class RangerSystemAccessControlTest {
     assertEquals(accessControlManager.filterSchemas(context(alice), aliceCatalog, aliceSchemas), aliceSchemas);
     assertEquals(accessControlManager.filterSchemas(context(bob), "alice-catalog", aliceSchemas), ImmutableSet.of());
 
-    accessControlManager.checkCanCreateSchema(context(alice), aliceSchema);
+    accessControlManager.checkCanCreateSchema(context(alice), aliceSchema, Map.of());
     accessControlManager.checkCanDropSchema(context(alice), aliceSchema);
     accessControlManager.checkCanRenameSchema(context(alice), aliceSchema, "new-schema");
     accessControlManager.checkCanShowSchemas(context(alice), aliceCatalog);
 
     try {
-      accessControlManager.checkCanCreateSchema(context(bob), aliceSchema);
+      accessControlManager.checkCanCreateSchema(context(bob), aliceSchema, Map.of());
     } catch (AccessDeniedException expected) {
     }
 
@@ -140,7 +148,13 @@ public class RangerSystemAccessControlTest {
     accessControlManager.checkCanDeleteFromTable(context(alice), aliceTable);
     accessControlManager.checkCanRenameColumn(context(alice), aliceTable);
 
+    accessControlManager.checkCanUpdateTableColumns(context(alice), aliceTable, aliceColumns);
 
+    try {
+      accessControlManager.checkCanUpdateTableColumns(context(alice), aliceTable, aliceDeniedColumns);
+    } catch (AccessDeniedException expected) {
+    }
+    
     try {
       accessControlManager.checkCanCreateTable(context(bob), aliceTable,Map.of());
     } catch (AccessDeniedException expected) {
@@ -149,55 +163,72 @@ public class RangerSystemAccessControlTest {
 
   @Test
   @SuppressWarnings("PMD")
-  public void testViewOperations()
-  {
+  public void testViewOperations() {
     accessControlManager.checkCanCreateView(context(alice), aliceView);
     accessControlManager.checkCanDropView(context(alice), aliceView);
     accessControlManager.checkCanSelectFromColumns(context(alice), aliceView, ImmutableSet.of());
-    accessControlManager.checkCanCreateViewWithSelectFromColumns(context(alice), aliceTable, ImmutableSet.of());
-    accessControlManager.checkCanCreateViewWithSelectFromColumns(context(alice), aliceView, ImmutableSet.of());
-    accessControlManager.checkCanSetCatalogSessionProperty(context(alice), aliceCatalog, "property");
-    accessControlManager.checkCanGrantTablePrivilege(context(alice), SELECT, aliceTable, new TrinoPrincipal(USER, "grantee"), true);
-    accessControlManager.checkCanRevokeTablePrivilege(context(alice), SELECT, aliceTable, new TrinoPrincipal(USER, "revokee"), true);
+    accessControlManager.checkCanCreateViewWithSelectFromColumns(context(alice), aliceTable,
+        ImmutableSet.of());
+    accessControlManager.checkCanCreateViewWithSelectFromColumns(context(alice), aliceView,
+        ImmutableSet.of());
+    accessControlManager.checkCanSetCatalogSessionProperty(context(alice), aliceCatalog,
+        "property");
+    accessControlManager.checkCanGrantTablePrivilege(context(alice), SELECT, aliceTable,
+        new TrinoPrincipal(USER, "grantee"), true);
+    accessControlManager.checkCanRevokeTablePrivilege(context(alice), SELECT, aliceTable,
+        new TrinoPrincipal(USER, "revokee"), true);
+    accessControlManager.checkCanDropMaterializedView(context(alice), aliceMaterializedView);
+    accessControlManager.checkCanRefreshMaterializedView(context(alice), aliceMaterializedView);
 
     try {
       accessControlManager.checkCanCreateView(context(bob), aliceView);
     } catch (AccessDeniedException expected) {
     }
+    assertThrows(AccessDeniedException.class, () -> accessControlManager.checkCanCreateMaterializedView(context(alice), aliceMaterializedView,
+        ImmutableMap.of()));
   }
 
   @Test
   @SuppressWarnings("PMD")
   public void testMisc()
   {
-    assertEquals(accessControlManager.filterViewQueryOwnedBy(context(alice), queryOwners), queryOwners);
+    assertEquals(accessControlManager.filterViewQueryOwnedBy(alice, queryOwners), queryOwners);
 
     // check {type} / {col} replacement
     final VarcharType varcharType = VarcharType.createVarcharType(20);
 
     Optional<ViewExpression> ret = accessControlManager.getColumnMask(context(alice), aliceTable, "cast_me", varcharType);
-    List<ViewExpression> retArray = accessControlManager.getColumnMasks(context(alice), aliceTable, "cast_me", varcharType);
-    assertNotNull(ret.get());
-    assertEquals(ret.get().getExpression(), "cast cast_me as varchar(20)");
-    assertEquals(1, retArray.size());
-    assertEquals("cast cast_me as varchar(20)", retArray.get(0).getExpression());
+    assertEquals("cast cast_me as varchar(20)", ret.get().getExpression());
 
     ret = accessControlManager.getColumnMask(context(alice), aliceTable,"do-not-cast-me", varcharType);
-    retArray = accessControlManager.getColumnMasks(context(alice), aliceTable,"do-not-cast-me", varcharType);
     assertFalse(ret.isPresent());
+
+    List<ViewExpression> retArray = accessControlManager.getRowFilters(context(alice), aliceTable);
     assertTrue(retArray.isEmpty());
 
-    ret = accessControlManager.getRowFilter(context(alice), aliceTable);
-    retArray = accessControlManager.getRowFilters(context(alice), aliceTable);
-    assertFalse(ret.isPresent());
-    assertTrue(retArray.isEmpty());
+    assertTrue(accessControlManager.canExecuteFunction(context(alice), aliceFunction));
+    accessControlManager.checkCanCreateFunction(context(alice), aliceFunction);
+    accessControlManager.checkCanDropFunction(context(alice), aliceFunction);
 
-    accessControlManager.checkCanExecuteFunction(context(alice), functionName);
-    accessControlManager.checkCanGrantExecuteFunctionPrivilege(context(alice), functionName, new TrinoPrincipal(USER, "grantee"), true);
+    assertFalse(accessControlManager.canExecuteFunction(context(bob), aliceFunction));
+    try {
+      accessControlManager.checkCanCreateFunction(context(bob), aliceFunction);
+      throw new AssertionError("expected AccessDeniedExeption");
+    }
+    catch (AccessDeniedException expected) {
+    }
+
+    try {
+      accessControlManager.checkCanDropFunction(context(bob), aliceFunction);
+      throw new AssertionError("expected AccessDeniedExeption");
+    }
+    catch (AccessDeniedException expected) {
+    }
+
     accessControlManager.checkCanExecuteProcedure(context(alice), aliceProcedure);
   }
 
   private SystemSecurityContext context(Identity id) {
-    return new SystemSecurityContext(id, Optional.empty());
+    return new SystemSecurityContext(id, QueryId.valueOf(id.getUser()), Instant.now());
   }
 }

@@ -47,7 +47,7 @@
       "policyLabels": [],
       "zoneName": "",
       "isDenyAllElse": false,
-      "id": 51,
+      "id": 50,
       "guid": "7ab96b62-6fd3-4193-bf49-af462c25784d",
       "isEnabled": true,
       "version": 1
@@ -62,7 +62,7 @@
       "resources": {
         "function": {
           "values": [
-            "function"
+            "alice-catalog.schema.function"
           ],
           "isExcludes": false,
           "isRecursive": false
@@ -77,6 +77,14 @@
             },
             {
               "type": "grant",
+              "isAllowed": true
+            },
+            {
+              "type": "create",
+              "isAllowed": true
+            },
+            {
+              "type": "drop",
               "isAllowed": true
             }
           ],
@@ -348,6 +356,106 @@
     },
     {
       "service": "cl1_trino",
+      "name": "alice-columns",
+      "policyType": 0,
+      "policyPriority": 0,
+      "description": "",
+      "isAuditEnabled": true,
+      "resources": {
+        "schema": {
+          "values": [
+            "schema"
+          ],
+          "isExcludes": false,
+          "isRecursive": false
+        },
+        "catalog": {
+          "values": [
+            "alice-catalog"
+          ],
+          "isExcludes": false,
+          "isRecursive": false
+        },
+        "column": {
+          "values": [
+            "alice-col1",
+            "alice-col2"
+          ],
+          "isExcludes": false,
+          "isRecursive": false
+        },
+        "table": {
+          "values": [
+            "table",
+            "alice"
+          ],
+          "isExcludes": false,
+          "isRecursive": false
+        }
+      },
+      "policyItems": [
+        {
+          "accesses": [
+            {
+              "type": "select",
+              "isAllowed": true
+            },
+            {
+              "type": "insert",
+              "isAllowed": true
+            },
+            {
+              "type": "drop",
+              "isAllowed": true
+            },
+            {
+              "type": "delete",
+              "isAllowed": true
+            },
+            {
+              "type": "alter",
+              "isAllowed": true
+            },
+            {
+              "type": "grant",
+              "isAllowed": true
+            },
+            {
+              "type": "update",
+              "isAllowed": true
+            },
+            {
+              "type": "revoke",
+              "isAllowed": true
+            }
+          ],
+          "users": [
+            "alice"
+          ],
+          "groups": [],
+          "roles": [],
+          "conditions": [],
+          "delegateAdmin": false
+        }
+      ],
+      "denyPolicyItems": [],
+      "allowExceptions": [],
+      "denyExceptions": [],
+      "dataMaskPolicyItems": [],
+      "rowFilterPolicyItems": [],
+      "serviceType": "trino",
+      "options": {},
+      "validitySchedules": [],
+      "policyLabels": [],
+      "zoneName": "",
+      "isDenyAllElse": false,
+      "id": 70,
+      "guid": "b47e1c19-a05f-41f8-94ef-f86c14076ac6",
+      "isEnabled": true,
+      "version": 2
+    },
+    {
+      "service": "cl1_trino",
       "name": "alice-procedure",
       "policyType": 0,
       "policyPriority": 0,
@@ -433,6 +541,7 @@
         },
         "table": {
           "values": [
+            "materialized-view",
             "view"
           ],
           "isExcludes": false,
@@ -444,6 +553,10 @@
           "accesses": [
             {
               "type": "select",
+              "isAllowed": true
+            },
+            {
+              "type": "update",
               "isAllowed": true
             },
             {

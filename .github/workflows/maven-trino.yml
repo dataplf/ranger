@@ -22,7 +22,7 @@
 # separate terms of service, privacy policy, and support
 # documentation.
 
-name: Java CI with Maven for Security Admin
+name: Java CI with Maven for Trino Plugin
 
 on:
   push:
@@ -31,7 +31,7 @@ on:
     branches: [ "feat/mm" ]
 
 jobs:
-  build:
+  test:
 
     runs-on: ubuntu-latest
 
@@ -43,5 +43,5 @@ jobs:
         java-version: '23'
         distribution: 'temurin'
         cache: maven
-    - name: Build and Package with Maven
-      run: mvn -B clean verify -P ranger-admin,'!all','!linux' 
+    - name: Verify with Maven
+      run: mvn -B verify -P ranger-trino-plugin,'!all','!linux'

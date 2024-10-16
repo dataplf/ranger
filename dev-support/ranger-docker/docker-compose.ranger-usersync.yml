@@ -20,6 +20,12 @@ services:
       - USERSYNC_VERSION
       - ENABLE_FILE_SYNC_SOURCE
       - DEBUG_USERSYNC=${DEBUG_USERSYNC:-false}
+      - RANGER_POLICY_MGR_URL=http://ranger:6080
+      - RANGER_USERSYNC_PASSWORD=rangerR0cks!
+    volumes:
+      - ./scripts/reload_properties.sh:/reload_properties.sh
+    command:
+      - /reload_properties.sh /opt/ranger/usersync/install.properties && /home/ranger/scripts/ranger-usersync.sh
 
 networks:
   ranger:

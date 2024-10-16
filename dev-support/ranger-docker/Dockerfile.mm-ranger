@@ -1,0 +1,66 @@
+FROM eclipse-temurin:23_37-jdk-noble AS ranger_base
+
+# Install tzdata, Python, Java, python-requests
+RUN apt-get update && \
+    DEBIAN_FRONTEND="noninteractive" apt-get -y install python3 python3-pip bc apt-transport-https && \
+    pip3 install --no-cache-dir apache-ranger requests --break-system-packages && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Set environment variables
+ENV RANGER_DIST    /home/ranger/dist
+ENV RANGER_SCRIPTS /home/ranger/scripts
+ENV RANGER_HOME    /opt/ranger
+
+# setup groups, users, directories
+RUN groupadd ranger && \
+    useradd -g ranger -ms /bin/bash ranger && \
+    useradd -g ranger -ms /bin/bash rangeradmin && \
+    useradd -g ranger -ms /bin/bash rangerusersync && \
+    useradd -g ranger -ms /bin/bash rangertagsync && \
+    useradd -g ranger -ms /bin/bash rangerkms && \
+    groupadd hadoop && \
+    useradd -g hadoop -ms /bin/bash hdfs && \
+    useradd -g hadoop -ms /bin/bash yarn && \
+    useradd -g hadoop -ms /bin/bash hive && \
+    useradd -g hadoop -ms /bin/bash hbase && \
+    useradd -g hadoop -ms /bin/bash kafka && \
+    groupadd knox && \
+    useradd -g knox -ms /bin/bash knox && \
+    mkdir -p /home/ranger/dist && \
+    mkdir -p /home/ranger/scripts && \
+    chown -R ranger:ranger /home/ranger && \
+    mkdir -p /opt/ranger && \
+    chown -R ranger:ranger /opt/ranger
+
+FROM ranger_base as builder
+
+ARG RANGER_VERSION
+
+COPY ./dist/version                               /home/ranger/dist/
+COPY ./dist/ranger-${RANGER_VERSION}-admin.tar.gz /home/ranger/dist/
+
+RUN tar xvfz /home/ranger/dist/ranger-${RANGER_VERSION}-admin.tar.gz --directory=${RANGER_HOME} \
+    && ln -s ${RANGER_HOME}/ranger-${RANGER_VERSION}-admin ${RANGER_HOME}/admin \
+    && chown -R ranger:ranger ${RANGER_HOME}/admin/
+
+FROM ranger_base AS ranger
+
+ARG RANGER_VERSION
+
+ADD --link https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.0/postgresql-42.7.0.jar /usr/share/java/postgresql.jar
+
+COPY --link --from=builder ${RANGER_HOME} ${RANGER_HOME}
+COPY --link ./scripts/ranger.sh ${RANGER_SCRIPTS}/
+COPY --link ./scripts/create-ranger-services.py ${RANGER_SCRIPTS}/
+COPY --link ./scripts/ranger-admin-install-postgres.properties ${RANGER_HOME}/admin/install.properties
+
+RUN mkdir -p /var/run/ranger \
+    && mkdir -p /var/log/ranger \
+    && chown -R ranger:ranger ${RANGER_SCRIPTS}/ /var/run/ranger/ /var/log/ranger/ /usr/share/java/postgresql.jar \
+    && chmod 744 ${RANGER_SCRIPTS}/ranger.sh ${RANGER_SCRIPTS}/create-ranger-services.py \
+    && mkdir -p /usr/share/java/
+
+USER ranger
+
+ENTRYPOINT [ "/home/ranger/scripts/ranger.sh" ]

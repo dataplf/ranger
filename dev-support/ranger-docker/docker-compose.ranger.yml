@@ -3,7 +3,7 @@ services:
   ranger:
     build:
       context: .
-      dockerfile: Dockerfile.ranger
+      dockerfile: Dockerfile.mm-ranger
       args:
         - RANGER_VERSION=${RANGER_VERSION}
         - RANGER_DB_TYPE=${RANGER_DB_TYPE}
@@ -18,50 +18,47 @@ services:
     ports:
       - "6080:6080"
     depends_on:
-      ranger-zk:
+      es01:
         condition: service_started
       ranger-db:
         condition: service_healthy
-      ranger-solr:
-        condition: service_started
     environment:
       - RANGER_VERSION
       - RANGER_DB_TYPE
       - DEBUG_ADMIN=${DEBUG_ADMIN:-false}
+      - RANGER_DB_ROOT_USER=postgres
+      - RANGER_DB_ROOT_PASSWORD=rangerR0cks!
+      - RANGER_DB_USER=rangeradmin
+      - RANGER_DB_PASSWORD=rangerR0cks!
+      - RANGER_ADMIN_PASSWORD=rangerR0cks!
+      - RANGER_DB_HOST=ranger-db
+      - RANGER_AUDIT_URL=es01
+      - RANGER_AUDIT_PORT=9200
+      - RANGER_AUDIT_USER=elastic
+      - RANGER_AUDIT_PASSWORD=elasticsearch
+      - RANGER_ADMIN_EXTERNAL_URL=http://ranger-admin:6080
+      - RANGER_TAGRSYNC_PASSWORD=rangerR0cks!
+      - RANGER_USERSYNC_PASSWORD=rangerR0cks!
+      - RANGER_KEYADMIN_PASSWORD=rangerR0cks!
+      - RANGER_ADMIN_MAX_HEAP_SIZE=2g
+
     command:
       - /home/ranger/scripts/ranger.sh
 
-  ranger-zk:
-    build:
-      context: .
-      dockerfile: Dockerfile.ranger-zk
-      args:
-        - ZK_VERSION=${ZK_VERSION}
-    image: ranger-zk
-    container_name: ranger-zk
-    hostname: ranger-zk.example.com
+  es01:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.12.1
+    container_name: es01
+    hostname: es01.example.com
     networks:
       - ranger
     ports:
-      - "2181:2181"
-
-  ranger-solr:
-    build:
-      context: .
-      dockerfile: Dockerfile.ranger-solr
-      args:
-        - SOLR_VERSION=${SOLR_VERSION}
-    image: ranger-solr
-    container_name: ranger-solr
-    hostname: ranger-solr.example.com
-    networks:
-      - ranger
-    ports:
-      - "8983:8983"
-    command:
-      - solr-precreate
-      - ranger_audits
-      - /opt/solr/server/solr/configsets/ranger_audits/
+      - "9200:9200"
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - bootstrap.memory_lock=true
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+      - cluster.routing.allocation.disk.threshold_enabled=false
 
 networks:
   ranger:

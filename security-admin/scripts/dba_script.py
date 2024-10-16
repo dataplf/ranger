@@ -91,6 +91,11 @@ def populate_global_dict():
 				#if statuscode == 1:
 				value = ''
 			value = value.strip()
+
+			# load environment variables if value start with $ and not start with $PWD
+			if value.startswith("$") and not value.startswith("$PWD"):
+				value = os.getenv(value[1:])
+
 			globalDict[key] = value
 
 def logFile(msg):
@@ -1067,7 +1072,7 @@ class SqlServerConf(BaseDB):
 						jisql_log(query_with_masked_pwd, db_root_password)
 						ret = subprocessCallWithRetry(query)
 					if self.verify_user(root_user, db_root_password, db_user,dryMode):
-						 log("[I] SQL Server Login " + db_user + " created", "info")
+						log("[I] SQL Server Login " + db_user + " created", "info")
 					else:
 						log("[E] SQL Server Login " +db_user+" creation failed..", "error")
 						sys.exit(1)
@@ -1275,7 +1280,7 @@ class SqlAnywhereConf(BaseDB):
 						jisql_log(query_with_masked_pwd, db_root_password)
 						ret = subprocessCallWithRetry(query)
 					if self.verify_user(root_user, db_root_password, db_user,dryMode):
-						 log("[I] SQL Anywhere user " + db_user + " created", "info")
+						log("[I] SQL Anywhere user " + db_user + " created", "info")
 					else:
 						log("[E] SQL Anywhere user " +db_user+" creation failed..", "error")
 						sys.exit(1)

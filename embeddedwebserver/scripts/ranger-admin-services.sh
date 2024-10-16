@@ -32,7 +32,7 @@ XAPOLICYMGR_DIR=`(cd $realScriptDir/..; pwd)`
 XAPOLICYMGR_EWS_DIR=${XAPOLICYMGR_DIR}/ews
 RANGER_JAAS_LIB_DIR="${XAPOLICYMGR_EWS_DIR}/ranger_jaas"
 RANGER_JAAS_CONF_DIR="${XAPOLICYMGR_EWS_DIR}/webapp/WEB-INF/classes/conf/ranger_jaas"
-ranger_admin_max_heap_size=1g
+ranger_admin_max_heap_size=${RANGER_ADMIN_MAX_HEAP_SIZE:-1g}
 
 if [ -f ${XAPOLICYMGR_DIR}/ews/webapp/WEB-INF/classes/conf/java_home.sh ]; then
         . ${XAPOLICYMGR_DIR}/ews/webapp/WEB-INF/classes/conf/java_home.sh
