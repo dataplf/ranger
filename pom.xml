@@ -397,8 +397,8 @@
                 <module>plugin-schema-registry</module>
                 <module>plugin-sqoop</module>
                 <module>ranger-sqoop-plugin-shim</module>
-                <module>plugin-kylin</module>
-                <module>ranger-kylin-plugin-shim</module>
+                <!-- <module>plugin-kylin</module>
+                <module>ranger-kylin-plugin-shim</module> -->
                 <module>plugin-elasticsearch</module>
                 <module>ranger-elasticsearch-plugin-shim</module>
                 <module>ranger-authn</module>
@@ -596,7 +596,7 @@
                 <module>ranger-sqoop-plugin-shim</module>
             </modules>
         </profile>
-        <profile>
+        <!-- <profile>
             <id>ranger-kylin-plugin</id>
             <modules>
                 <module>agents-audit</module>
@@ -609,7 +609,7 @@
                 <module>plugin-kylin</module>
                 <module>ranger-kylin-plugin-shim</module>
             </modules>
-        </profile>
+        </profile> -->
         <profile>
             <id>ranger-elasticsearch-plugin</id>
             <modules>
@@ -723,8 +723,8 @@
                 <module>plugin-schema-registry</module>
                 <module>plugin-sqoop</module>
                 <module>ranger-sqoop-plugin-shim</module>
-                <module>plugin-kylin</module>
-                <module>ranger-kylin-plugin-shim</module>
+                <!-- <module>plugin-kylin</module>
+                <module>ranger-kylin-plugin-shim</module> -->
                 <module>plugin-presto</module>
                 <module>ranger-presto-plugin-shim</module>
                 <module>plugin-trino</module>
@@ -813,8 +813,8 @@
                 <module>plugin-schema-registry</module>
                 <module>plugin-sqoop</module>
                 <module>ranger-sqoop-plugin-shim</module>
-                <module>plugin-kylin</module>
-                <module>ranger-kylin-plugin-shim</module>
+                <!-- <module>plugin-kylin</module>
+                <module>ranger-kylin-plugin-shim</module> -->
                 <module>plugin-elasticsearch</module>
                 <module>ranger-elasticsearch-plugin-shim</module>
             </modules>

@@ -435,7 +435,7 @@
       </binaries>
     </moduleSet>
 
-    <moduleSet>
+    <!-- <moduleSet>
       <useAllReactorProjects>true</useAllReactorProjects>
       <includes>
         <include>org.apache.ranger:ranger-kylin-plugin</include>
@@ -450,7 +450,7 @@
           <include>org.apache.ranger:ranger-kylin-plugin</include>
         </includes>
       </binaries>
-    </moduleSet>
+    </moduleSet> -->
 
     <moduleSet>
       <useAllReactorProjects>true</useAllReactorProjects>
